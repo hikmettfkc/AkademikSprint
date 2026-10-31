@@ -9,12 +9,32 @@ import 'models.dart';
 /// - Her zaman iki sik vardir; celdirici bariz sekilde farkli bir anlamdir.
 class QuestionEngine {
   QuestionEngine({required this.content, this.difficulty = Difficulty.mixed, Random? random})
-      : _rng = random ?? Random() {
+      : _rng = random ?? Random(),
+        reviewIds = null {
     _words = allWords.where((w) => difficulty.includes(w.level)).toList();
     _sentences = allSentences.where((s) => difficulty.includes(s.level)).toList();
     if (_sentences.isEmpty) _sentences = List.of(allSentences);
     _refill();
   }
+
+  /// "Hatalarim" modu: yalnizca verilen ogeler (kelime ve cumle) sorulur.
+  QuestionEngine.review(List<String> ids, {Random? random})
+      : _rng = random ?? Random(),
+        content = ContentMode.mixed,
+        difficulty = Difficulty.mixed,
+        reviewIds = ids.toSet() {
+    _words = allWords.where((w) => reviewIds!.contains(w.id)).toList();
+    _sentences = allSentences.where((s) => reviewIds!.contains(s.id)).toList();
+    _refill();
+  }
+
+  /// Hatalarim modundaki ogeler; normal modda null.
+  final Set<String>? reviewIds;
+
+  bool get isReview => reviewIds != null;
+
+  /// Hatalarim modunda sorulacak oge sayisi.
+  int get reviewCount => _words.length + _sentences.length;
 
   final ContentMode content;
   final Difficulty difficulty;
@@ -55,6 +75,12 @@ class QuestionEngine {
     final words = List<Word>.of(_words)..shuffle(_rng);
     final sentences = List<Sentence>.of(_sentences)..shuffle(_rng);
     final List<Object> batch;
+    if (isReview) {
+      batch = [...words, ...sentences]..shuffle(_rng);
+      if (batch.isEmpty) batch.add(allWords[_rng.nextInt(allWords.length)]);
+      _queue.addAll(batch);
+      return;
+    }
     switch (content) {
       case ContentMode.words:
         batch = [...words];
@@ -106,6 +132,7 @@ class QuestionEngine {
     final distractor = _distractorFor(word);
     final reverse = _rng.nextDouble() < 0.25;
     return Question(
+      pos: word.pos,
       itemId: word.id,
       kind: reverse ? QuestionKind.wordTrEn : QuestionKind.wordEnTr,
       prompt: reverse ? word.tr : word.en,
@@ -116,7 +143,13 @@ class QuestionEngine {
   }
 
   Word _distractorFor(Word word) {
-    bool ok(Word w) => w.en != word.en && w.meanings.intersection(word.meanings).isEmpty;
+    // Celdirici, dogru cevapla anlamca cakismamali (ortak anlam ya da birbirini iceren anlam yok).
+    bool clash(String a, String b) => a == b || a.contains(b) || b.contains(a);
+    bool ok(Word w) =>
+        w.en != word.en &&
+        !w.en.contains(word.en) &&
+        !word.en.contains(w.en) &&
+        !w.meanings.any((m) => word.meanings.any((n) => clash(m, n)));
     // Once ayni tur ve seviye, yoksa ayni tur, en son herhangi bir kelime.
     var pool = allWords.where((w) => w.pos == word.pos && w.level == word.level && ok(w)).toList();
     if (pool.length < 3) pool = allWords.where((w) => w.pos == word.pos && ok(w)).toList();

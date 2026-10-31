@@ -7,7 +7,10 @@ YDS ve ALES'e hazırlananlar için TikTok / Reels tarzı, dikey kaydırmalı kel
 - İki cevaplama modu: **Kaydır** (kartı doğru tarafa at) ve **Dokun** (şıkka dokun).
 - **Seviye:** Kolay, Orta, Zor veya Karışık. **İçerik:** Kelime, Cümle veya Karışık.
 - **Sprint:** 20, 50, 100 kart veya Sonsuz. Sprint sonunda doğrular, süre, en iyi seri ve tekrar edilecek kelimeler.
-- Yanlış yapılan öğe birkaç kart sonra tekrar sorulur.
+- Yanlış yapılan öğe birkaç kart sonra tekrar sorulur ve **Hatalarım** listesine eklenir; oradan ayrıca tekrar edilebilir.
+- **Telaffuz:** İngilizce kartlarda hoparlör butonu (cihazın kendi seslendirmesi, internet gerekmez); istenirse otomatik.
+- **Günlük seri:** Üst üste çalışılan gün sayısı.
+- Phrasal verb ve bağlaçlar ayrı türlerdir; yanlış şık da aynı türden gelir.
 - Doğru / yanlış sesleri ve hafif titreşim (ayarlardan kapatılabilir, iPhone sessiz moduna uyar).
 - Animasyonlu açılış ve ilk açılışta 4 adımlık tanıtım.
 - Pastel, kalın çerçeveli oyun tarzı açık tema. Koyu mod ve emoji yok.
@@ -26,7 +29,7 @@ flutter test
 
 | Dosya | Görev |
 | --- | --- |
-| `lib/data/word_data.dart` | Kelime listesi (`ingilizce\|türkçe\|tür\|seviye`), 1678 kelime |
+| `lib/data/word_data.dart` | Kelime listesi (`ingilizce\|türkçe\|tür\|seviye`), 3009 kelime |
 | `lib/data/sentence_data.dart` | Cümleler (`ingilizce\|\|doğru çeviri\|\|yanlış çeviri`) |
 | `lib/question_engine.dart` | Sonsuz soru akışı, çeldirici seçimi, yanlışları tekrar sorma |
 | `lib/screens/home_screen.dart` | Mod seçimi ve istatistikler |
@@ -36,7 +39,7 @@ flutter test
 
 ## İçerik ve telif
 
-Kelime listesi (1678 kelime: 585 kolay, 650 orta, 443 zor) ve 40 cümle bu proje için yazılmıştır. Ses efektleri (`assets/sounds`) kodla üretilmiştir. Başka uygulama veya sitelerden kelime listesi, çeviri ya da örnek cümle **kopyalanmamalıdır**; bunlar derleme eser olarak telifle korunabilir. Liste büyütülürken:
+Kelime listesi (3009 kelime: 1049 kolay, 1080 orta, 880 zor; 89 phrasal verb ve 82 bağlaç dahil) ve 144 cümle bu proje için yazılmıştır. Ses efektleri (`assets/sounds`) kodla üretilmiştir. Başka uygulama veya sitelerden kelime listesi, çeviri ya da örnek cümle **kopyalanmamalıdır**; bunlar derleme eser olarak telifle korunabilir. Liste büyütülürken:
 
 - Kendi listenizi yazın veya üretin, ardından elle kontrol edin.
 - Açık lisanslı kaynak kullanacaksanız lisansına uyun ve kaynak gösterin (ör. Tatoeba cümleleri CC BY 2.0, Wiktionary CC BY-SA).

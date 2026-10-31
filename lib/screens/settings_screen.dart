@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../feedback_fx.dart';
+import '../speech.dart';
 import '../stats_store.dart';
 import '../theme.dart';
 import '../widgets/chunky_button.dart';
@@ -106,6 +107,21 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     subtitle: 'Cevap verince hafif titreşim',
                     value: s.hapticsOn,
                     onChanged: (v) => setState(() => s.hapticsOn = v),
+                  ),
+                ]),
+                const SizedBox(height: 20),
+                _section('Telaffuz'),
+                _box([
+                  _switch(
+                    icon: Icons.record_voice_over_rounded,
+                    color: AppColors.lavender,
+                    title: 'Otomatik telaffuz',
+                    subtitle: 'Her yeni İngilizce kartı sesli oku',
+                    value: s.autoSpeak,
+                    onChanged: (v) {
+                      setState(() => s.autoSpeak = v);
+                      if (v) Speech.instance.say('Hello');
+                    },
                   ),
                 ]),
                 const SizedBox(height: 20),

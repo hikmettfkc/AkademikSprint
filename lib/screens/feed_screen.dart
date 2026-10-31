@@ -1,10 +1,12 @@
 import 'dart:async';
+import 'dart:math';
 
 import 'package:flutter/material.dart';
 
 import '../feedback_fx.dart';
 import '../models.dart';
 import '../question_engine.dart';
+import '../speech.dart';
 import '../stats_store.dart';
 import '../theme.dart';
 import '../widgets/blob_background.dart';
@@ -21,6 +23,7 @@ class FeedScreen extends StatefulWidget {
     required this.contentMode,
     required this.difficulty,
     required this.sprintLength,
+    this.review = false,
   });
 
   final StatsStore store;
@@ -29,13 +32,17 @@ class FeedScreen extends StatefulWidget {
   final Difficulty difficulty;
   final int sprintLength;
 
+  /// "Hatalarim" modu: yalnizca daha once yanlis yapilan ogeler.
+  final bool review;
+
   @override
   State<FeedScreen> createState() => _FeedScreenState();
 }
 
 class _FeedScreenState extends State<FeedScreen> {
-  late final QuestionEngine _engine =
-      QuestionEngine(content: widget.contentMode, difficulty: widget.difficulty);
+  late final QuestionEngine _engine = widget.review
+      ? QuestionEngine.review(widget.store.mistakes)
+      : QuestionEngine(content: widget.contentMode, difficulty: widget.difficulty);
   late final FeedbackFx _fx = FeedbackFx.of(widget.store);
   final _controller = PageController();
   final List<Question> _questions = [];
@@ -58,6 +65,19 @@ class _FeedScreenState extends State<FeedScreen> {
       _questions.add(_engine.next());
     }
     return _questions[i];
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) => _autoSpeak(0));
+  }
+
+  void _autoSpeak(int page) {
+    if (!mounted || !widget.store.autoSpeak) return;
+    if (_isSprint && page >= widget.sprintLength) return;
+    final q = _questionAt(page);
+    if (q.promptIsEnglish) Speech.instance.say(q.prompt);
   }
 
   @override
@@ -99,6 +119,7 @@ class _FeedScreenState extends State<FeedScreen> {
   void _onPageChanged(int p) {
     _advanceTimer?.cancel();
     setState(() => _page = p);
+    _autoSpeak(p);
     if (_isSprint && p == widget.sprintLength && !_finished) {
       _finished = true;
       _elapsed = DateTime.now().difference(_started);
@@ -116,6 +137,15 @@ class _FeedScreenState extends State<FeedScreen> {
   }
 
   void _again() {
+    var length = widget.sprintLength;
+    if (widget.review) {
+      final left = widget.store.mistakes.length;
+      if (left == 0) {
+        Navigator.of(context).pop();
+        return;
+      }
+      length = min(reviewSprintLength, left);
+    }
     Navigator.of(context).pushReplacement(PageRouteBuilder(
       transitionDuration: const Duration(milliseconds: 380),
       pageBuilder: (_, _, _) => FeedScreen(
@@ -123,7 +153,8 @@ class _FeedScreenState extends State<FeedScreen> {
         answerMode: widget.answerMode,
         contentMode: widget.contentMode,
         difficulty: widget.difficulty,
-        sprintLength: widget.sprintLength,
+        sprintLength: length,
+        review: widget.review,
       ),
       transitionsBuilder: (_, a, _, child) => FadeTransition(opacity: a, child: child),
     ));
@@ -165,6 +196,10 @@ class _FeedScreenState extends State<FeedScreen> {
             itemBuilder: (context, i) {
               if (_isSprint && i == widget.sprintLength) {
                 return SprintSummary(
+                  title: widget.review ? 'Tekrar tamam!' : 'Sprint tamam!',
+                  againLabel: widget.review
+                      ? (widget.store.mistakes.isEmpty ? 'Ana ekrana dön' : 'Tekrara devam')
+                      : 'Bir sprint daha',
                   result: _result(),
                   onAgain: _again,
                   onHome: () => Navigator.of(context).pop(),

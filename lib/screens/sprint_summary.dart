@@ -5,6 +5,7 @@ import '../theme.dart';
 import '../widgets/blob_background.dart';
 import '../widgets/chunky_button.dart';
 import '../widgets/logo_mark.dart';
+import '../widgets/speak_button.dart';
 
 class SprintResult {
   const SprintResult({
@@ -28,7 +29,17 @@ class SprintResult {
 
 /// Sprint bitince gosterilen kutlama ve ozet ekrani.
 class SprintSummary extends StatelessWidget {
-  const SprintSummary({super.key, required this.result, required this.onAgain, required this.onHome});
+  const SprintSummary({
+    super.key,
+    required this.result,
+    required this.onAgain,
+    required this.onHome,
+    this.title = 'Sprint tamam!',
+    this.againLabel = 'Bir sprint daha',
+  });
+
+  final String title;
+  final String againLabel;
 
   final SprintResult result;
   final VoidCallback onAgain;
@@ -67,9 +78,10 @@ class SprintSummary extends StatelessWidget {
                       children: [
                         const Center(child: AnimatedLogoMark(size: 130)),
                         const SizedBox(height: 10),
-                        const Text('Sprint tamam!',
+                        Text(title,
                             textAlign: TextAlign.center,
-                            style: TextStyle(fontSize: 34, fontWeight: FontWeight.w900, color: AppColors.accentDark)),
+                            style: const TextStyle(
+                                fontSize: 34, fontWeight: FontWeight.w900, color: AppColors.accentDark)),
                         Text(_message,
                             textAlign: TextAlign.center,
                             style: const TextStyle(
@@ -104,16 +116,16 @@ class SprintSummary extends StatelessWidget {
                           outlined: true,
                           color: AppColors.butter,
                           onTap: onAgain,
-                          child: const Row(
+                          child: Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              Icon(Icons.replay_rounded, color: AppColors.ink),
-                              SizedBox(width: 8),
+                              const Icon(Icons.replay_rounded, color: AppColors.ink),
+                              const SizedBox(width: 8),
                               Flexible(
                                 child: FittedBox(
                                   fit: BoxFit.scaleDown,
-                                  child: Text('Bir sprint daha',
-                                      style: TextStyle(fontSize: 20, fontWeight: FontWeight.w900)),
+                                  child: Text(againLabel,
+                                      style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w900)),
                                 ),
                               ),
                             ],
@@ -192,7 +204,11 @@ class SprintSummary extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(q.prompt, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w900)),
+            Row(children: [
+              Expanded(child: Text(q.prompt, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w900))),
+              if (q.kind != QuestionKind.sentence)
+                SpeakButton(text: q.kind == QuestionKind.wordTrEn ? q.correctText : q.prompt, size: 30),
+            ]),
             const SizedBox(height: 2),
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,

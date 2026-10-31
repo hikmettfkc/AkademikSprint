@@ -340,6 +340,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                   onPick: (i) => setState(() => _demoPick = i),
                   showSwipeHint: true,
                   showNextHint: false,
+                  showSpeaker: false,
                 ),
               ),
             ),

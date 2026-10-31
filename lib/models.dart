@@ -22,6 +22,9 @@ enum Difficulty {
 /// Secilebilir sprint uzunluklari. 0 = sonsuz.
 const sprintOptions = [20, 50, 100, 0];
 
+/// Hatalarim modunda bir turdaki en fazla kart.
+const reviewSprintLength = 20;
+
 String sprintLabel(int n) => n == 0 ? 'Sonsuz' : '$n';
 
 class Word {
@@ -42,12 +45,14 @@ class Sentence {
   final String en;
   final String tr;
   final String wrong;
-  const Sentence(this.index, this.en, this.tr, this.wrong);
+  const Sentence(this.index, this.en, this.tr, this.wrong, [this._level]);
+
+  final int? _level;
 
   String get id => 's:$index';
 
-  /// Cumle seviyesi uzunluga gore: kisa cumleler daha kolay.
-  int get level => en.length < 60 ? 1 : (en.length < 75 ? 2 : 3);
+  /// Elle verilmemisse uzunluga gore: kisa cumleler daha kolay.
+  int get level => _level ?? (en.length < 53 ? 1 : (en.length < 61 ? 2 : 3));
 }
 
 enum QuestionKind { wordEnTr, wordTrEn, sentence }
@@ -60,7 +65,11 @@ class Question {
   final int correctIndex;
   final int colorIndex;
 
+  /// Kelime turu (v, n, a, d, p, c); cumlelerde bos.
+  final String pos;
+
   const Question({
+    this.pos = '',
     required this.itemId,
     required this.kind,
     required this.prompt,
@@ -71,8 +80,11 @@ class Question {
 
   String get correctText => options[correctIndex];
 
+  /// Kartta Ingilizce metin mi var? (telaffuz butonu icin)
+  bool get promptIsEnglish => kind != QuestionKind.wordTrEn;
+
   String get label => switch (kind) {
-        QuestionKind.wordEnTr => 'Bu kelimenin anlamı ne?',
+        QuestionKind.wordEnTr => (pos == 'p' || pos == 'c') ? 'Bu ifadenin anlamı ne?' : 'Bu kelimenin anlamı ne?',
         QuestionKind.wordTrEn => 'İngilizcesi hangisi?',
         QuestionKind.sentence => 'Doğru çeviri hangisi?',
       };
@@ -93,7 +105,7 @@ final List<Sentence> allSentences = () {
     for (var i = 0; i < lines.length; i++)
       () {
         final p = lines[i].split('||');
-        return Sentence(i, p[0].trim(), p[1].trim(), p[2].trim());
+        return Sentence(i, p[0].trim(), p[1].trim(), p[2].trim(), p.length > 3 ? int.parse(p[3].trim()) : null);
       }(),
   ];
 }();

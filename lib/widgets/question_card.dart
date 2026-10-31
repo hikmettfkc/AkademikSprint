@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import '../models.dart';
 import '../theme.dart';
 import 'chunky_button.dart';
+import 'speak_button.dart';
 
 const _praise = ['Harika!', 'Tam isabet!', 'Süpersin!', 'Çok iyi gidiyorsun!', 'Aynen böyle!', 'Bildin!'];
 const _comfort = [
@@ -23,6 +24,7 @@ class QuestionCard extends StatefulWidget {
     required this.onPick,
     this.showSwipeHint = false,
     this.showNextHint = true,
+    this.showSpeaker = true,
   });
 
   final Question question;
@@ -31,6 +33,7 @@ class QuestionCard extends StatefulWidget {
   final ValueChanged<int> onPick;
   final bool showSwipeHint;
   final bool showNextHint;
+  final bool showSpeaker;
 
   @override
   State<QuestionCard> createState() => _QuestionCardState();
@@ -42,10 +45,7 @@ class _QuestionCardState extends State<QuestionCard> with SingleTickerProviderSt
   bool _compact = false;
   late final String _praiseText;
   late final String _comfortText;
-  late final AnimationController _pop = AnimationController(
-    vsync: this,
-    duration: const Duration(milliseconds: 420),
-  );
+  late final AnimationController _pop = AnimationController(vsync: this, duration: const Duration(milliseconds: 420));
 
   @override
   void initState() {
@@ -77,41 +77,50 @@ class _QuestionCardState extends State<QuestionCard> with SingleTickerProviderSt
   Widget build(BuildContext context) {
     final q = widget.question;
     final base = AppColors.cardColors[q.colorIndex];
-    return LayoutBuilder(builder: (context, c) {
-      final width = c.maxWidth;
-      final threshold = width * 0.22;
-      // Kucuk alanlarda (onboarding denemesi, kisa telefonlar) daha sik yerlesim.
-      _compact = c.maxHeight < 560;
-      final gap = _compact ? 10.0 : 22.0;
-      return Padding(
-        padding: _compact ? const EdgeInsets.fromLTRB(14, 10, 14, 10) : const EdgeInsets.fromLTRB(20, 8, 20, 24),
-        child: Column(
-          children: [
-            const Spacer(),
-            _labelPill(q.label, base),
-            SizedBox(height: _compact ? 8 : 14),
-            _promptCard(q, base, threshold),
-            SizedBox(height: gap),
-            if (widget.mode == AnswerMode.tap) ..._tapOptions(q) else _swipeOptions(q, threshold),
-            SizedBox(height: _compact ? 8 : 16),
-            SizedBox(height: _compact ? 46 : 56, child: _feedback(q)),
-            const Spacer(),
-            if (widget.showNextHint) _nextHint(),
-          ],
-        ),
-      );
-    });
+    return LayoutBuilder(
+      builder: (context, c) {
+        final width = c.maxWidth;
+        final threshold = width * 0.22;
+        // Kucuk alanlarda (onboarding denemesi, kisa telefonlar) daha sik yerlesim.
+        _compact = c.maxHeight < 560;
+        final gap = _compact ? 10.0 : 22.0;
+        final padding = _compact ? const EdgeInsets.fromLTRB(14, 10, 14, 10) : const EdgeInsets.fromLTRB(20, 8, 20, 24);
+        // Cok kisa ekranlarda tasmak yerine kaydirilabilir olsun; normalde bosluklar dagitilir.
+        return SingleChildScrollView(
+          physics: const ClampingScrollPhysics(),
+          padding: padding,
+          child: ConstrainedBox(
+            constraints: BoxConstraints(minHeight: (c.maxHeight - padding.vertical).clamp(0, double.infinity)),
+            child: IntrinsicHeight(
+              child: Column(
+                children: [
+                  const Spacer(),
+                  _labelPill(q.label, base),
+                  SizedBox(height: _compact ? 8 : 14),
+                  _promptCard(q, base, threshold),
+                  SizedBox(height: gap),
+                  if (widget.mode == AnswerMode.tap) ..._tapOptions(q) else _swipeOptions(q, threshold),
+                  SizedBox(height: _compact ? 8 : 16),
+                  SizedBox(height: _compact ? 46 : 56, child: _feedback(q)),
+                  const Spacer(),
+                  if (widget.showNextHint) _nextHint(),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    );
   }
 
   Widget _labelPill(String text, Color base) => Container(
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
-        decoration: BoxDecoration(
-          color: Colors.white.withValues(alpha: 0.85),
-          borderRadius: BorderRadius.circular(40),
-        ),
-        child: Text(text,
-            style: const TextStyle(fontWeight: FontWeight.w800, color: AppColors.inkSoft, fontSize: 14)),
-      );
+    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+    decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.85), borderRadius: BorderRadius.circular(40)),
+    child: Text(
+      text,
+      style: const TextStyle(fontWeight: FontWeight.w800, color: AppColors.inkSoft, fontSize: 14),
+    ),
+  );
 
   Widget _promptCard(Question q, Color base, double threshold) {
     final isSentence = q.kind == QuestionKind.sentence;
@@ -139,17 +148,24 @@ class _QuestionCardState extends State<QuestionCard> with SingleTickerProviderSt
           border: Border.all(color: AppColors.shade(base, 0.05), width: 3),
           boxShadow: [BoxShadow(color: AppColors.shade(base, 0.1), offset: const Offset(0, 8))],
         ),
-        child: Center(
-          child: Text(
-            q.prompt,
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              fontSize: isSentence ? 21 : (q.prompt.length > 14 ? 30 : (_compact ? 34 : 40)),
-              height: isSentence ? 1.4 : 1.15,
-              fontWeight: isSentence ? FontWeight.w700 : FontWeight.w900,
-              color: AppColors.ink,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              q.prompt,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: isSentence ? 21 : (q.prompt.length > 14 ? 30 : (_compact ? 34 : 40)),
+                height: isSentence ? 1.4 : 1.15,
+                fontWeight: isSentence ? FontWeight.w700 : FontWeight.w900,
+                color: AppColors.ink,
+              ),
             ),
-          ),
+            if (q.promptIsEnglish && widget.showSpeaker) ...[
+              SizedBox(height: _compact ? 8 : 14),
+              SpeakButton(text: q.prompt),
+            ],
+          ],
         ),
       ),
     );
@@ -191,20 +207,20 @@ class _QuestionCardState extends State<QuestionCard> with SingleTickerProviderSt
   }
 
   List<Widget> _tapOptions(Question q) => [
-        for (var i = 0; i < 2; i++) ...[
-          if (i == 1) SizedBox(height: _compact ? 10 : 14),
-          AnimatedOpacity(
-            duration: const Duration(milliseconds: 200),
-            opacity: _answered && i != q.correctIndex && i != widget.picked ? 0.5 : 1,
-            child: ChunkyButton(
-              onTap: _answered ? null : () => _pick(i),
-              color: _optionColor(i, q),
-              borderColor: _optionBorder(i, q),
-              child: _optionText(q.options[i], q, i),
-            ),
-          ),
-        ],
-      ];
+    for (var i = 0; i < 2; i++) ...[
+      if (i == 1) SizedBox(height: _compact ? 10 : 14),
+      AnimatedOpacity(
+        duration: const Duration(milliseconds: 200),
+        opacity: _answered && i != q.correctIndex && i != widget.picked ? 0.5 : 1,
+        child: ChunkyButton(
+          onTap: _answered ? null : () => _pick(i),
+          color: _optionColor(i, q),
+          borderColor: _optionBorder(i, q),
+          child: _optionText(q.options[i], q, i),
+        ),
+      ),
+    ],
+  ];
 
   Widget _optionText(String text, Question q, int i) {
     final isSentence = q.kind == QuestionKind.sentence;
@@ -222,6 +238,10 @@ class _QuestionCardState extends State<QuestionCard> with SingleTickerProviderSt
             ),
           ),
         ),
+        if (_answered && i == q.correctIndex && q.kind == QuestionKind.wordTrEn && widget.showSpeaker) ...[
+          const SizedBox(width: 6),
+          SpeakButton(text: text, size: 34),
+        ],
         if (_answered && (i == q.correctIndex || i == widget.picked)) ...[
           const SizedBox(width: 8),
           Icon(
@@ -237,8 +257,11 @@ class _QuestionCardState extends State<QuestionCard> with SingleTickerProviderSt
     final leftGlow = !_answered && _dx < 0 ? (-_dx / threshold).clamp(0.0, 1.0) : 0.0;
     final rightGlow = !_answered && _dx > 0 ? (_dx / threshold).clamp(0.0, 1.0) : 0.0;
     Widget side(int i, double glow, bool left) {
-      final arrow = Icon(left ? Icons.arrow_back_rounded : Icons.arrow_forward_rounded,
-          color: AppColors.accentDark, size: 22);
+      final arrow = Icon(
+        left ? Icons.arrow_back_rounded : Icons.arrow_forward_rounded,
+        color: AppColors.accentDark,
+        size: 22,
+      );
       return Expanded(
         child: AnimatedScale(
           duration: const Duration(milliseconds: 120),
@@ -269,8 +292,10 @@ class _QuestionCardState extends State<QuestionCard> with SingleTickerProviderSt
         ),
         if (widget.showSwipeHint && !_answered) ...[
           SizedBox(height: _compact ? 8 : 14),
-          const Text('Kartı doğru cevaba doğru kaydır',
-              style: TextStyle(color: AppColors.inkSoft, fontWeight: FontWeight.w700)),
+          const Text(
+            'Kartı doğru cevaba doğru kaydır',
+            style: TextStyle(color: AppColors.inkSoft, fontWeight: FontWeight.w700),
+          ),
         ],
       ],
     );
@@ -283,37 +308,41 @@ class _QuestionCardState extends State<QuestionCard> with SingleTickerProviderSt
       child: !_answered
           ? const SizedBox.shrink()
           : widget.picked == q.correctIndex
-              ? _bubble(_praiseText, AppColors.correct, Icons.star_rounded)
-              : _bubble(_comfortText, AppColors.accent, Icons.favorite_rounded),
+          ? _bubble(_praiseText, AppColors.correct, Icons.star_rounded)
+          : _bubble(_comfortText, AppColors.accent, Icons.favorite_rounded),
     );
   }
 
   Widget _bubble(String text, Color color, IconData icon) => Container(
-        key: ValueKey(text),
-        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
-        decoration: BoxDecoration(color: color, borderRadius: BorderRadius.circular(40)),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(icon, color: Colors.white, size: 22),
-            const SizedBox(width: 8),
-            Flexible(
-              child: Text(text,
-                  style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 16)),
-            ),
-          ],
+    key: ValueKey(text),
+    padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
+    decoration: BoxDecoration(color: color, borderRadius: BorderRadius.circular(40)),
+    child: Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Icon(icon, color: Colors.white, size: 22),
+        const SizedBox(width: 8),
+        Flexible(
+          child: Text(
+            text,
+            style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 16),
+          ),
         ),
-      );
+      ],
+    ),
+  );
 
   Widget _nextHint() => AnimatedOpacity(
-        duration: const Duration(milliseconds: 300),
-        opacity: _answered ? 1 : 0.0,
-        child: const Column(
-          children: [
-            Icon(Icons.keyboard_arrow_up_rounded, color: AppColors.inkSoft, size: 30),
-            Text('Sıradaki için yukarı kaydır',
-                style: TextStyle(color: AppColors.inkSoft, fontWeight: FontWeight.w700)),
-          ],
+    duration: const Duration(milliseconds: 300),
+    opacity: _answered ? 1 : 0.0,
+    child: const Column(
+      children: [
+        Icon(Icons.keyboard_arrow_up_rounded, color: AppColors.inkSoft, size: 30),
+        Text(
+          'Sıradaki için yukarı kaydır',
+          style: TextStyle(color: AppColors.inkSoft, fontWeight: FontWeight.w700),
         ),
-      );
+      ],
+    ),
+  );
 }

@@ -24,7 +24,13 @@ void _phone(WidgetTester tester) {
 
 void main() {
   test('veri dosyalari dogru ayristiriliyor', () {
-    expect(allWords.length, greaterThan(1500));
+    expect(allWords.length, greaterThanOrEqualTo(3000));
+    expect(allWords.where((w) => w.pos == 'p').length, greaterThan(50), reason: 'phrasal verb');
+    expect(allWords.where((w) => w.pos == 'c').length, greaterThan(50), reason: 'baglac');
+    expect(allSentences.length, greaterThanOrEqualTo(140));
+    for (final level in [1, 2, 3]) {
+      expect(allSentences.where((s) => s.level == level).length, greaterThan(30));
+    }
     expect(allSentences.length, greaterThanOrEqualTo(40));
     expect(allWords.map((w) => w.en.toLowerCase()).toSet().length, allWords.length,
         reason: 'tekrar eden kelime var');
@@ -75,6 +81,50 @@ void main() {
     engine.markWrong(first.itemId);
     final ids = [for (var i = 0; i < QuestionEngine.retryGap + 1; i++) engine.next().itemId];
     expect(ids, contains(first.itemId));
+  });
+
+  test('celdirici dogru cevapla anlamca cakismiyor', () {
+    final engine = QuestionEngine(content: ContentMode.words);
+    for (var i = 0; i < 2000; i++) {
+      final q = engine.next();
+      final a = q.options[0].split(',').map((e) => e.trim());
+      final b = q.options[1].split(',').map((e) => e.trim()).toList();
+      for (final x in a) {
+        for (final y in b) {
+          expect(x.contains(y) || y.contains(x), isFalse, reason: '${q.prompt}: ${q.options}');
+        }
+      }
+    }
+  });
+
+  test('hatalarim modu yalnizca yanlis yapilan ogeleri sorar', () {
+    final ids = [allWords[3].id, allWords[400].id, allSentences[5].id];
+    final engine = QuestionEngine.review(ids);
+    expect(engine.reviewCount, 3);
+    for (var i = 0; i < 30; i++) {
+      expect(ids, contains(engine.next().itemId));
+    }
+  });
+
+  test('gun serisi ve hata listesi kaydediliyor', () async {
+    SharedPreferences.setMockInitialValues({});
+    final store = await StatsStore.load();
+    final d1 = DateTime(2026, 3, 10, 9);
+    await store.record(itemId: 'w:a', isCorrect: false, streak: 0, now: d1);
+    expect(store.dayStreakAt(d1), 1);
+    expect(store.mistakes, ['w:a']);
+
+    await store.record(itemId: 'w:b', isCorrect: true, streak: 1, now: d1.add(const Duration(hours: 3)));
+    expect(store.dayStreakAt(d1), 1, reason: 'ayni gun seriyi artirmaz');
+
+    final d2 = d1.add(const Duration(days: 1));
+    await store.record(itemId: 'w:a', isCorrect: true, streak: 2, now: d2);
+    expect(store.dayStreakAt(d2), 2);
+    expect(store.mistakes, isEmpty, reason: 'dogru cevaplaninca hatalardan cikar');
+
+    expect(store.dayStreakAt(d2.add(const Duration(days: 2))), 0, reason: 'bir gun atlaninca seri biter');
+    await store.record(itemId: 'w:c', isCorrect: true, streak: 3, now: d2.add(const Duration(days: 2)));
+    expect(store.dayStreakAt(d2.add(const Duration(days: 2))), 1);
   });
 
   testWidgets('ana ekran aciliyor ve akis basliyor', (tester) async {

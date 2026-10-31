@@ -28,6 +28,27 @@ class _HomeScreenState extends State<HomeScreen> {
     for (final d in Difficulty.values) d: allWords.where((w) => d.includes(w.level)).length,
   };
 
+  Future<void> _startReview() async {
+    final n = widget.store.mistakes.length;
+    if (n == 0) return;
+    await Navigator.of(context).push(PageRouteBuilder(
+      pageBuilder: (_, _, _) => FeedScreen(
+        store: widget.store,
+        answerMode: _answer,
+        contentMode: ContentMode.mixed,
+        difficulty: Difficulty.mixed,
+        sprintLength: n < reviewSprintLength ? n : reviewSprintLength,
+        review: true,
+      ),
+      transitionsBuilder: (_, a, _, child) => SlideTransition(
+        position: Tween(begin: const Offset(0, 1), end: Offset.zero)
+            .animate(CurvedAnimation(parent: a, curve: Curves.easeOutCubic)),
+        child: child,
+      ),
+    ));
+    if (mounted) setState(() {});
+  }
+
   Future<void> _start() async {
     widget.store
       ..answerMode = _answer
@@ -75,6 +96,8 @@ class _HomeScreenState extends State<HomeScreen> {
                       padding: const EdgeInsets.fromLTRB(20, 8, 20, 16),
                       children: [
                         _statsRow(s),
+                        const SizedBox(height: 14),
+                        _reviewCard(s.mistakes.length),
                         const SizedBox(height: 22),
                         _sectionTitle('Seviye'),
                         _segmented<Difficulty>(
@@ -203,10 +226,44 @@ class _HomeScreenState extends State<HomeScreen> {
     return Row(children: [
       tile('${s.learnedCount}', 'öğrenilen', AppColors.butter),
       const SizedBox(width: 10),
-      tile('${s.sprintsDone}', 'sprint', AppColors.sky),
+      tile('${s.dayStreak}', 'gün serisi', AppColors.sky),
       const SizedBox(width: 10),
       tile('${s.bestStreak}', 'en iyi seri', AppColors.blush),
     ]);
+  }
+
+  Widget _reviewCard(int count) {
+    final has = count > 0;
+    return ChunkyButton(
+      outlined: true,
+      depth: 5,
+      color: has ? AppColors.peach : Colors.white,
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+      onTap: has ? _startReview : null,
+      child: Row(children: [
+        Container(
+          padding: const EdgeInsets.all(7),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: AppColors.ink, width: 2),
+          ),
+          child: Icon(has ? Icons.replay_rounded : Icons.verified_rounded, color: AppColors.ink, size: 22),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Text(has ? 'Hatalarım' : 'Hatalarım boş',
+                style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w900)),
+            Text(has ? '$count kelime ve cümle seni bekliyor' : 'Yanlış yaptıkların burada toplanır',
+                style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: AppColors.inkSoft)),
+          ]),
+        ),
+        if (has)
+          const Text('Tekrar et', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w900)),
+        if (has) const Icon(Icons.chevron_right_rounded, color: AppColors.ink),
+      ]),
+    );
   }
 
   Widget _segmented<T>({
