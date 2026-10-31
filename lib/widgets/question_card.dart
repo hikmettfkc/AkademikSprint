@@ -22,6 +22,7 @@ class QuestionCard extends StatefulWidget {
     required this.picked,
     required this.onPick,
     this.showSwipeHint = false,
+    this.showNextHint = true,
   });
 
   final Question question;
@@ -29,6 +30,7 @@ class QuestionCard extends StatefulWidget {
   final int? picked;
   final ValueChanged<int> onPick;
   final bool showSwipeHint;
+  final bool showNextHint;
 
   @override
   State<QuestionCard> createState() => _QuestionCardState();
@@ -37,6 +39,7 @@ class QuestionCard extends StatefulWidget {
 class _QuestionCardState extends State<QuestionCard> with SingleTickerProviderStateMixin {
   double _dx = 0;
   bool _dragging = false;
+  bool _compact = false;
   late final String _praiseText;
   late final String _comfortText;
   late final AnimationController _pop = AnimationController(
@@ -77,20 +80,23 @@ class _QuestionCardState extends State<QuestionCard> with SingleTickerProviderSt
     return LayoutBuilder(builder: (context, c) {
       final width = c.maxWidth;
       final threshold = width * 0.22;
+      // Kucuk alanlarda (onboarding denemesi, kisa telefonlar) daha sik yerlesim.
+      _compact = c.maxHeight < 560;
+      final gap = _compact ? 10.0 : 22.0;
       return Padding(
-        padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
+        padding: _compact ? const EdgeInsets.fromLTRB(14, 10, 14, 10) : const EdgeInsets.fromLTRB(20, 8, 20, 24),
         child: Column(
           children: [
             const Spacer(),
             _labelPill(q.label, base),
-            const SizedBox(height: 14),
+            SizedBox(height: _compact ? 8 : 14),
             _promptCard(q, base, threshold),
-            const SizedBox(height: 22),
+            SizedBox(height: gap),
             if (widget.mode == AnswerMode.tap) ..._tapOptions(q) else _swipeOptions(q, threshold),
-            const SizedBox(height: 16),
-            SizedBox(height: 56, child: _feedback(q)),
+            SizedBox(height: _compact ? 8 : 16),
+            SizedBox(height: _compact ? 46 : 56, child: _feedback(q)),
             const Spacer(),
-            _nextHint(),
+            if (widget.showNextHint) _nextHint(),
           ],
         ),
       );
@@ -125,8 +131,8 @@ class _QuestionCardState extends State<QuestionCard> with SingleTickerProviderSt
           ..rotateZ(tilt),
         transformAlignment: Alignment.bottomCenter,
         width: double.infinity,
-        constraints: BoxConstraints(minHeight: isSentence ? 180 : 200),
-        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 30),
+        constraints: BoxConstraints(minHeight: _compact ? 96 : (isSentence ? 180 : 200)),
+        padding: EdgeInsets.symmetric(horizontal: 24, vertical: _compact ? 16 : 30),
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(32),
@@ -138,7 +144,7 @@ class _QuestionCardState extends State<QuestionCard> with SingleTickerProviderSt
             q.prompt,
             textAlign: TextAlign.center,
             style: TextStyle(
-              fontSize: isSentence ? 21 : (q.prompt.length > 14 ? 30 : 40),
+              fontSize: isSentence ? 21 : (q.prompt.length > 14 ? 30 : (_compact ? 34 : 40)),
               height: isSentence ? 1.4 : 1.15,
               fontWeight: isSentence ? FontWeight.w700 : FontWeight.w900,
               color: AppColors.ink,
@@ -186,7 +192,7 @@ class _QuestionCardState extends State<QuestionCard> with SingleTickerProviderSt
 
   List<Widget> _tapOptions(Question q) => [
         for (var i = 0; i < 2; i++) ...[
-          if (i == 1) const SizedBox(height: 14),
+          if (i == 1) SizedBox(height: _compact ? 10 : 14),
           AnimatedOpacity(
             duration: const Duration(milliseconds: 200),
             opacity: _answered && i != q.correctIndex && i != widget.picked ? 0.5 : 1,
@@ -262,7 +268,7 @@ class _QuestionCardState extends State<QuestionCard> with SingleTickerProviderSt
           children: [side(0, leftGlow, true), const SizedBox(width: 12), side(1, rightGlow, false)],
         ),
         if (widget.showSwipeHint && !_answered) ...[
-          const SizedBox(height: 14),
+          SizedBox(height: _compact ? 8 : 14),
           const Text('Kartı doğru cevaba doğru kaydır',
               style: TextStyle(color: AppColors.inkSoft, fontWeight: FontWeight.w700)),
         ],

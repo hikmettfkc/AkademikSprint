@@ -23,6 +23,17 @@ class StatsStore {
   set answerMode(AnswerMode m) => _prefs.setInt('answerMode', m.index);
   set contentMode(ContentMode m) => _prefs.setInt('contentMode', m.index);
 
+  bool get onboardingDone => _prefs.getBool('onboardingDone') ?? false;
+  set onboardingDone(bool v) => _prefs.setBool('onboardingDone', v);
+
+  ExamGoal get examGoal =>
+      ExamGoal.values[(_prefs.getInt('examGoal') ?? 0).clamp(0, ExamGoal.values.length - 1)];
+  set examGoal(ExamGoal g) => _prefs.setInt('examGoal', g.index);
+
+  /// Gunluk hedef: kac sprint (1 sprint = 20 kart).
+  int get dailySprintGoal => _prefs.getInt('dailySprintGoal') ?? 3;
+  set dailySprintGoal(int v) => _prefs.setInt('dailySprintGoal', v);
+
   bool get seenSwipeHint => _prefs.getBool('seenSwipeHint') ?? false;
   void markSwipeHintSeen() => _prefs.setBool('seenSwipeHint', true);
 

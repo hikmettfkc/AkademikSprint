@@ -116,14 +116,12 @@ flutter_launcher_icons:
     background_color: "#E3DBFA"
     theme_color: "#8C7CF0"
 
-# Acilis ekrani: dart run flutter_native_splash:create
+# Sistem acilis ekrani duz lavanta; logo animasyonu Flutter tarafinda oynar (lib/screens/intro_screen.dart).
+# Yeniden uretmek icin: dart run flutter_native_splash:create
 flutter_native_splash:
   color: "#E3DBFA"
-  image: assets/branding/splash_logo.png
-  branding: assets/branding/wordmark.png
-  branding_bottom_padding: 48
   android_12:
     color: "#E3DBFA"
-    image: assets/branding/splash_android12.png
+    image: assets/branding/splash_android12_blank.png
     icon_background_color: "#E3DBFA"
   web: true

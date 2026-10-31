@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-import 'screens/home_screen.dart';
+import 'screens/intro_screen.dart';
 import 'stats_store.dart';
 import 'theme.dart';
 
@@ -23,7 +23,7 @@ class DilSprintApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       theme: buildTheme(),
       themeMode: ThemeMode.light,
-      home: HomeScreen(store: store),
+      home: IntroScreen(store: store),
     );
   }
 }

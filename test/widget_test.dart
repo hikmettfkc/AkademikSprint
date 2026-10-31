@@ -7,6 +7,13 @@ import 'dart:ui';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+Future<void> _skipIntro(WidgetTester tester) async {
+  for (var i = 0; i < 40; i++) {
+    await tester.pump(const Duration(milliseconds: 100));
+  }
+  await tester.pumpAndSettle();
+}
+
 void main() {
   test('veri dosyalari dogru ayristiriliyor', () {
     expect(allWords.length, greaterThan(150));
@@ -50,9 +57,10 @@ void main() {
     tester.view.physicalSize = const Size(1170, 2532);
     tester.view.devicePixelRatio = 3;
     addTearDown(tester.view.reset);
-    SharedPreferences.setMockInitialValues({});
+    SharedPreferences.setMockInitialValues({'onboardingDone': true});
     final store = await StatsStore.load();
     await tester.pumpWidget(DilSprintApp(store: store));
+    await _skipIntro(tester);
     expect(find.text('DilSprint', findRichText: true), findsOneWidget);
     expect(find.text('Kaydır'), findsOneWidget);
     expect(find.text('Dokun'), findsOneWidget);
@@ -65,5 +73,42 @@ void main() {
     expect(find.text('Bu kelimenin anlamı ne?').evaluate().isNotEmpty ||
         find.text('İngilizcesi hangisi?').evaluate().isNotEmpty, isTrue);
 
+  });
+
+  testWidgets('ilk acilista onboarding gosterilir ve secimler kaydedilir', (tester) async {
+    tester.view.physicalSize = const Size(1170, 2532);
+    tester.view.devicePixelRatio = 3;
+    addTearDown(tester.view.reset);
+    SharedPreferences.setMockInitialValues({});
+    final store = await StatsStore.load();
+    await tester.pumpWidget(DilSprintApp(store: store));
+    await _skipIntro(tester);
+
+    expect(find.text('Kaydır, bil, geç.'), findsOneWidget);
+    await tester.tap(find.text('Hadi başlayalım'));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('ALES'));
+    await tester.pump();
+    await tester.tap(find.text('Devam'));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Dokun'));
+    await tester.pump();
+    await tester.tap(find.text('hızlı'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Devam'));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('5 sprint'));
+    await tester.pump();
+    await tester.tap(find.text('Bitir ve başla'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('DilSprint', findRichText: true), findsOneWidget);
+    expect(store.onboardingDone, isTrue);
+    expect(store.examGoal, ExamGoal.ales);
+    expect(store.answerMode, AnswerMode.tap);
+    expect(store.dailySprintGoal, 5);
   });
 }

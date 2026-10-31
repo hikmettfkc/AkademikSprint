@@ -13,6 +13,7 @@ class ChunkyButton extends StatefulWidget {
     this.radius = 22,
     this.padding = const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
     this.borderColor,
+    this.outlined = false,
   });
 
   final Widget child;
@@ -22,6 +23,9 @@ class ChunkyButton extends StatefulWidget {
   final double radius;
   final EdgeInsets padding;
   final Color? borderColor;
+
+  /// Kalin koyu cerceve + koyu gölge (ikondaki tarz).
+  final bool outlined;
 
   @override
   State<ChunkyButton> createState() => _ChunkyButtonState();
@@ -48,10 +52,14 @@ class _ChunkyButtonState extends State<ChunkyButton> {
           decoration: BoxDecoration(
             color: widget.color,
             borderRadius: BorderRadius.circular(widget.radius),
-            border: widget.borderColor == null ? null : Border.all(color: widget.borderColor!, width: 2.5),
+            border: widget.outlined
+                ? Border.all(color: widget.borderColor ?? AppColors.ink, width: 2.5)
+                : widget.borderColor == null
+                    ? null
+                    : Border.all(color: widget.borderColor!, width: 2.5),
             boxShadow: [
               BoxShadow(
-                color: AppColors.shade(widget.color, 0.16),
+                color: widget.outlined ? AppColors.ink : AppColors.shade(widget.color, 0.16),
                 offset: Offset(0, widget.depth - offset),
               ),
             ],

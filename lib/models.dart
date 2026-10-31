@@ -5,6 +5,11 @@ enum AnswerMode { swipe, tap }
 
 enum ContentMode { words, sentences, mixed }
 
+enum ExamGoal { yds, ales, both }
+
+/// Bir sprintteki kart sayisi.
+const sprintLength = 20;
+
 class Word {
   final String en;
   final String tr;
