@@ -52,12 +52,14 @@ void main() {
     addTearDown(tester.view.reset);
     SharedPreferences.setMockInitialValues({});
     final store = await StatsStore.load();
-    await tester.pumpWidget(AkademikSprintApp(store: store));
-    expect(find.text('Sprint'), findsOneWidget);
+    await tester.pumpWidget(DilSprintApp(store: store));
+    expect(find.text('DilSprint', findRichText: true), findsOneWidget);
     expect(find.text('Kaydır'), findsOneWidget);
     expect(find.text('Dokun'), findsOneWidget);
 
     await tester.tap(find.text('Dokun'));
+    await tester.ensureVisible(find.text('Başla'));
+    await tester.pumpAndSettle();
     await tester.tap(find.text('Başla'));
     await tester.pumpAndSettle();
     expect(find.text('Bu kelimenin anlamı ne?').evaluate().isNotEmpty ||

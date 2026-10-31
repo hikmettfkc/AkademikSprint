@@ -1,4 +1,4 @@
-package com.akademiksprint.akademik_sprint
+package com.dilsprint.app
 
 import io.flutter.embedding.android.FlutterActivity
 

@@ -1,9 +1,9 @@
 {
-    "name": "Akademik Sprint",
-    "short_name": "Akademik Sprint",
+    "name": "DilSprint",
+    "short_name": "DilSprint",
     "start_url": ".",
     "display": "standalone",
-    "background_color": "#FFF8F0",
+    "background_color": "#E3DBFA",
     "theme_color": "#8C7CF0",
     "description": "YDS ve ALES için kaydırmalı kelime ve cümle sprinti",
     "orientation": "portrait-primary",

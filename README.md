@@ -1,4 +1,4 @@
-# Akademik Sprint
+# DilSprint
 
 YDS ve ALES'e hazırlananlar için TikTok / Reels tarzı, dikey kaydırmalı kelime ve cümle çeviri uygulaması (Flutter).
 

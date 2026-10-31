@@ -49,10 +49,13 @@ class _HomeScreenState extends State<HomeScreen> {
               child: ListView(
                 padding: const EdgeInsets.fromLTRB(20, 28, 20, 28),
                 children: [
-                  const Text('Akademik',
-                      style: TextStyle(fontSize: 22, fontWeight: FontWeight.w800, color: AppColors.inkSoft)),
-                  const Text('Sprint',
-                      style: TextStyle(fontSize: 52, height: 1, fontWeight: FontWeight.w900, color: AppColors.ink)),
+                  const Text.rich(
+                    TextSpan(children: [
+                      TextSpan(text: 'Dil', style: TextStyle(color: AppColors.ink)),
+                      TextSpan(text: 'Sprint', style: TextStyle(color: AppColors.accentDark)),
+                    ]),
+                    style: TextStyle(fontSize: 52, height: 1.05, fontWeight: FontWeight.w900, letterSpacing: -1),
+                  ),
                   const SizedBox(height: 8),
                   const Text('YDS ve ALES için kaydır, bil, geç. Her gün biraz, her seferinde daha iyi.',
                       style: TextStyle(fontSize: 16, color: AppColors.inkSoft, fontWeight: FontWeight.w600)),

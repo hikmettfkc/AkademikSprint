@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024"><g transform="translate(512 512) scale(0.58) translate(-460 -545)"><!-- hiz cizgileri -->
+  <g stroke="#2E2A4F" stroke-width="26" stroke-linecap="round">
+    <line x1="120" y1="420" x2="230" y2="420"/>
+    <line x1="90" y1="520" x2="230" y2="520"/>
+    <line x1="140" y1="620" x2="230" y2="620"/>
+  </g>
+  <!-- arka kart -->
+  <g transform="rotate(-12 560 520)">
+    <rect x="330" y="250" width="420" height="540" rx="70" fill="#2E2A4F"/>
+    <rect x="330" y="226" width="420" height="540" rx="70" fill="#CDEFE3" stroke="#2E2A4F" stroke-width="24"/>
+  </g>
+  <!-- on kart -->
+  <g transform="rotate(7 590 540)">
+    <rect x="380" y="300" width="420" height="540" rx="70" fill="#2E2A4F"/>
+    <rect x="380" y="270" width="420" height="540" rx="70" fill="#FFFFFF" stroke="#2E2A4F" stroke-width="24"/>
+    <path d="M640 360 L500 570 L590 570 L550 730 L700 500 L605 500 Z" fill="#FFD66B" stroke="#2E2A4F" stroke-width="24" stroke-linejoin="round"/>
+  </g>
+</g></svg>
