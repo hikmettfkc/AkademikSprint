@@ -8,12 +8,18 @@ import 'models.dart';
 /// - Yanlis yapilan ogeler birkac kart sonra tekrar karsiya cikar.
 /// - Her zaman iki sik vardir; celdirici bariz sekilde farkli bir anlamdir.
 class QuestionEngine {
-  QuestionEngine({required this.content, Random? random})
+  QuestionEngine({required this.content, this.difficulty = Difficulty.mixed, Random? random})
       : _rng = random ?? Random() {
+    _words = allWords.where((w) => difficulty.includes(w.level)).toList();
+    _sentences = allSentences.where((s) => difficulty.includes(s.level)).toList();
+    if (_sentences.isEmpty) _sentences = List.of(allSentences);
     _refill();
   }
 
   final ContentMode content;
+  final Difficulty difficulty;
+  late final List<Word> _words;
+  late List<Sentence> _sentences;
   final Random _rng;
 
   static const warmUpCount = 12;
@@ -46,8 +52,8 @@ class QuestionEngine {
   }
 
   void _refill() {
-    final words = List<Word>.of(allWords)..shuffle(_rng);
-    final sentences = List<Sentence>.of(allSentences)..shuffle(_rng);
+    final words = List<Word>.of(_words)..shuffle(_rng);
+    final sentences = List<Sentence>.of(_sentences)..shuffle(_rng);
     final List<Object> batch;
     switch (content) {
       case ContentMode.words:
@@ -64,8 +70,8 @@ class QuestionEngine {
         }
     }
 
-    // Ilk turda kolay kelimeleri one al.
-    if (_produced == 0) {
+    // Karisik modda ilk turda kolay kelimeleri one al.
+    if (_produced == 0 && difficulty == Difficulty.mixed) {
       final easy = batch.where((e) => e is Word && e.level == 1).take(warmUpCount).toList();
       batch.removeWhere(easy.contains);
       if (content == ContentMode.sentences) {
@@ -111,8 +117,10 @@ class QuestionEngine {
 
   Word _distractorFor(Word word) {
     bool ok(Word w) => w.en != word.en && w.meanings.intersection(word.meanings).isEmpty;
-    final samePos = allWords.where((w) => w.pos == word.pos && ok(w)).toList();
-    final pool = samePos.isNotEmpty ? samePos : allWords.where(ok).toList();
+    // Once ayni tur ve seviye, yoksa ayni tur, en son herhangi bir kelime.
+    var pool = allWords.where((w) => w.pos == word.pos && w.level == word.level && ok(w)).toList();
+    if (pool.length < 3) pool = allWords.where((w) => w.pos == word.pos && ok(w)).toList();
+    if (pool.isEmpty) pool = allWords.where(ok).toList();
     return pool[_rng.nextInt(pool.length)];
   }
 

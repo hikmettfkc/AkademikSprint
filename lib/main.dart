@@ -1,3 +1,4 @@
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -23,6 +24,8 @@ class DilSprintApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       theme: buildTheme(),
       themeMode: ThemeMode.light,
+      // Web onizlemesinde fareyle de kaydirilabilsin.
+      scrollBehavior: const MaterialScrollBehavior().copyWith(dragDevices: PointerDeviceKind.values.toSet()),
       home: IntroScreen(store: store),
     );
   }

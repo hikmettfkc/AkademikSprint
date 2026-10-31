@@ -5,7 +5,7 @@
     "display": "standalone",
     "background_color": "#E3DBFA",
     "theme_color": "#8C7CF0",
-    "description": "YDS ve ALES için kaydırmalı kelime ve cümle sprinti",
+    "description": "Kaydırmalı İngilizce kelime ve cümle sprinti",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [

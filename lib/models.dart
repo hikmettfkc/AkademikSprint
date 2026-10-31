@@ -5,10 +5,24 @@ enum AnswerMode { swipe, tap }
 
 enum ContentMode { words, sentences, mixed }
 
-enum ExamGoal { yds, ales, both }
+/// Kelime seviyesi secimi. [mixed] tum seviyeleri karistirir.
+enum Difficulty {
+  easy('Kolay', 1),
+  medium('Orta', 2),
+  hard('Zor', 3),
+  mixed('Karışık', 0);
 
-/// Bir sprintteki kart sayisi.
-const sprintLength = 20;
+  const Difficulty(this.label, this.level);
+  final String label;
+  final int level;
+
+  bool includes(int itemLevel) => level == 0 || level == itemLevel;
+}
+
+/// Secilebilir sprint uzunluklari. 0 = sonsuz.
+const sprintOptions = [20, 50, 100, 0];
+
+String sprintLabel(int n) => n == 0 ? 'Sonsuz' : '$n';
 
 class Word {
   final String en;
@@ -31,6 +45,9 @@ class Sentence {
   const Sentence(this.index, this.en, this.tr, this.wrong);
 
   String get id => 's:$index';
+
+  /// Cumle seviyesi uzunluga gore: kisa cumleler daha kolay.
+  int get level => en.length < 60 ? 1 : (en.length < 75 ? 2 : 3);
 }
 
 enum QuestionKind { wordEnTr, wordTrEn, sentence }

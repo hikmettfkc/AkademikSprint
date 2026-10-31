@@ -23,14 +23,14 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   final _pages = PageController();
   int _page = 0;
 
-  ExamGoal? _exam;
+  Difficulty? _level;
   AnswerMode _mode = AnswerMode.swipe;
-  int? _daily;
+  int? _sprint;
   int? _demoPick;
 
   bool get _canContinue => switch (_page) {
-        1 => _exam != null,
-        3 => _daily != null,
+        1 => _level != null,
+        3 => _sprint != null,
         _ => true,
       };
 
@@ -47,9 +47,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
   void _finish() {
     final s = widget.store
-      ..examGoal = _exam ?? ExamGoal.both
+      ..difficulty = _level ?? Difficulty.easy
       ..answerMode = _mode
-      ..dailySprintGoal = _daily ?? 3
+      ..sprintLength = _sprint ?? 20
       ..onboardingDone = true;
     Navigator.of(context).pushReplacement(PageRouteBuilder(
       transitionDuration: const Duration(milliseconds: 400),
@@ -87,7 +87,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                       controller: _pages,
                       physics: const NeverScrollableScrollPhysics(),
                       onPageChanged: (p) => setState(() => _page = p),
-                      children: [_welcome(), _examPage(), _modePage(), _dailyPage()],
+                      children: [_welcome(), _levelPage(), _modePage(), _sprintPage()],
                     ),
                   ),
                   Padding(
@@ -183,7 +183,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                 textAlign: TextAlign.center, style: TextStyle(fontSize: 34, fontWeight: FontWeight.w900)),
             const SizedBox(height: 12),
             const Text(
-              'YDS ve ALES kelimelerini oyun gibi çalış. Her kartta sadece iki şık var, '
+              'İngilizce kelimeleri oyun gibi çalış. Her kartta sadece iki şık var, '
               'yanlış yapmak da öğrenmenin bir parçası.',
               textAlign: TextAlign.center,
               style: TextStyle(fontSize: 17, height: 1.4, color: AppColors.inkSoft, fontWeight: FontWeight.w700),
@@ -217,35 +217,35 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
         ]),
       );
 
-  // 2. Sinav hedefi
-  Widget _examPage() => ListView(
+  // 2. Seviye
+  Widget _levelPage() => ListView(
         padding: const EdgeInsets.fromLTRB(20, 20, 20, 12),
         children: [
-          _title('Hangi sınava hazırlanıyorsun?', 'Kelimeler ikisinde de işine yarar. Sonra değiştirebilirsin.'),
+          _title('Seviyeni seç', 'Kolaydan başlamak her zaman iyi fikir. Sonra değiştirebilirsin.'),
           const SizedBox(height: 24),
           _option(
-            selected: _exam == ExamGoal.yds,
+            selected: _level == Difficulty.easy,
             color: AppColors.mint,
-            icon: Icons.translate_rounded,
-            title: 'YDS',
-            subtitle: 'Yabancı Dil Sınavı, YÖKDİL',
-            onTap: () => setState(() => _exam = ExamGoal.yds),
+            icon: Icons.eco_rounded,
+            title: 'Kolay',
+            subtitle: 'Sık kullanılan temel kelimelerle ısın',
+            onTap: () => setState(() => _level = Difficulty.easy),
           ),
           _option(
-            selected: _exam == ExamGoal.ales,
-            color: AppColors.peach,
-            icon: Icons.school_rounded,
-            title: 'ALES',
-            subtitle: 'Lisansüstü başvurular için',
-            onTap: () => setState(() => _exam = ExamGoal.ales),
+            selected: _level == Difficulty.medium,
+            color: AppColors.butter,
+            icon: Icons.trending_up_rounded,
+            title: 'Orta',
+            subtitle: 'Okuma metinlerinde sık geçenler',
+            onTap: () => setState(() => _level = Difficulty.medium),
           ),
           _option(
-            selected: _exam == ExamGoal.both,
-            color: AppColors.sky,
-            icon: Icons.layers_rounded,
-            title: 'İkisi de',
-            subtitle: 'Ya da henüz karar vermedim',
-            onTap: () => setState(() => _exam = ExamGoal.both),
+            selected: _level == Difficulty.hard,
+            color: AppColors.blush,
+            icon: Icons.local_fire_department_rounded,
+            title: 'Zor',
+            subtitle: 'İleri seviye, kendine meydan oku',
+            onTap: () => setState(() => _level = Difficulty.hard),
           ),
         ],
       );
@@ -373,35 +373,35 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     );
   }
 
-  // 4. Gunluk hedef
-  Widget _dailyPage() => ListView(
+  // 4. Sprint uzunlugu
+  Widget _sprintPage() => ListView(
         padding: const EdgeInsets.fromLTRB(20, 20, 20, 12),
         children: [
-          _title('Günlük hedefin ne olsun?', 'Bir sprint $sprintLength karttan oluşur. Az ama her gün, en iyisi.'),
+          _title('Bir sprint kaç kart olsun?', 'Sprint bitince sonucunu görürsün. Ana ekrandan her zaman değiştirebilirsin.'),
           const SizedBox(height: 24),
           _option(
-            selected: _daily == 1,
+            selected: _sprint == 20,
             color: AppColors.mint,
-            icon: Icons.spa_rounded,
-            title: '1 sprint',
-            subtitle: 'Rahat · günde yaklaşık 3 dakika',
-            onTap: () => setState(() => _daily = 1),
+            icon: Icons.directions_walk_rounded,
+            title: '20 kart',
+            subtitle: 'Kısa ve hızlı · yaklaşık 3 dakika',
+            onTap: () => setState(() => _sprint = 20),
           ),
           _option(
-            selected: _daily == 3,
+            selected: _sprint == 50,
             color: AppColors.butter,
             icon: Icons.directions_run_rounded,
-            title: '3 sprint',
-            subtitle: 'Düzenli · günde yaklaşık 10 dakika',
-            onTap: () => setState(() => _daily = 3),
+            title: '50 kart',
+            subtitle: 'Dengeli · yaklaşık 8 dakika',
+            onTap: () => setState(() => _sprint = 50),
           ),
           _option(
-            selected: _daily == 5,
+            selected: _sprint == 100,
             color: AppColors.blush,
             icon: Icons.bolt_rounded,
-            title: '5 sprint',
-            subtitle: 'Hırslı · günde yaklaşık 15 dakika',
-            onTap: () => setState(() => _daily = 5),
+            title: '100 kart',
+            subtitle: 'Uzun soluklu · yaklaşık 15 dakika',
+            onTap: () => setState(() => _sprint = 100),
           ),
         ],
       );

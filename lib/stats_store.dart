@@ -26,13 +26,33 @@ class StatsStore {
   bool get onboardingDone => _prefs.getBool('onboardingDone') ?? false;
   set onboardingDone(bool v) => _prefs.setBool('onboardingDone', v);
 
-  ExamGoal get examGoal =>
-      ExamGoal.values[(_prefs.getInt('examGoal') ?? 0).clamp(0, ExamGoal.values.length - 1)];
-  set examGoal(ExamGoal g) => _prefs.setInt('examGoal', g.index);
+  Difficulty get difficulty =>
+      Difficulty.values[(_prefs.getInt('difficulty') ?? 0).clamp(0, Difficulty.values.length - 1)];
+  set difficulty(Difficulty d) => _prefs.setInt('difficulty', d.index);
 
-  /// Gunluk hedef: kac sprint (1 sprint = 20 kart).
-  int get dailySprintGoal => _prefs.getInt('dailySprintGoal') ?? 3;
-  set dailySprintGoal(int v) => _prefs.setInt('dailySprintGoal', v);
+  /// Sprint uzunlugu (kart). 0 = sonsuz.
+  int get sprintLength {
+    final v = _prefs.getInt('sprintLength') ?? 20;
+    return sprintOptions.contains(v) ? v : 20;
+  }
+
+  set sprintLength(int v) => _prefs.setInt('sprintLength', v);
+
+  bool get soundOn => _prefs.getBool('soundOn') ?? true;
+  set soundOn(bool v) => _prefs.setBool('soundOn', v);
+
+  bool get hapticsOn => _prefs.getBool('hapticsOn') ?? true;
+  set hapticsOn(bool v) => _prefs.setBool('hapticsOn', v);
+
+  int get sprintsDone => _prefs.getInt('sprintsDone') ?? 0;
+  Future<void> markSprintDone() => _prefs.setInt('sprintsDone', sprintsDone + 1);
+
+  /// Tum ilerlemeyi siler (ayarlar korunur).
+  Future<void> resetProgress() async {
+    for (final k in ['answered', 'correct', 'bestStreak', 'learned', 'sprintsDone']) {
+      await _prefs.remove(k);
+    }
+  }
 
   bool get seenSwipeHint => _prefs.getBool('seenSwipeHint') ?? false;
   void markSwipeHintSeen() => _prefs.setBool('seenSwipeHint', true);
